@@ -1,0 +1,40 @@
+name: Build Doodh Dairy APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'DoodhDairy_Android_Starter.zip'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Extract project ZIP
+        run: |
+          unzip DoodhDairy_Android_Starter.zip -d extracted
+          find extracted -name gradlew -type f
+
+      - name: Build APK
+        run: |
+          PROJECT_DIR=$(dirname "$(find extracted -name gradlew -type f | head -n 1)")
+          chmod +x "$PROJECT_DIR/gradlew"
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DoodhDairy-APK
+          path: extracted/**/app/build/outputs/apk/debug/*.apk
