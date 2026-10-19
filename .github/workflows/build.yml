@@ -21,17 +21,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
       - name: Extract project ZIP
         run: |
           unzip DoodhDairy_Android_Starter.zip -d extracted
-          find extracted -name gradlew -type f
+          find extracted -name settings.gradle -type f
 
       - name: Build APK
         run: |
-          PROJECT_DIR=$(dirname "$(find extracted -name gradlew -type f | head -n 1)")
-          chmod +x "$PROJECT_DIR/gradlew"
+          PROJECT_DIR=$(dirname "$(find extracted -name settings.gradle -type f | head -n 1)")
+          test -n "$PROJECT_DIR"
+          sed -i "/com.google.gms.google-services/d" "$PROJECT_DIR/app/build.gradle"
           cd "$PROJECT_DIR"
-          ./gradlew assembleDebug
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
